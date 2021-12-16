@@ -6,20 +6,23 @@ $errors      = [];
 $success     = false;
 $requireKeys = ['name', 'email', 'comment'];
 
-const FILE_NAME = "data.csv";
+$fileName = "data_" . date('m') . ".csv";
 
 try {
+    if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email address.";
+    }
 
-    foreach ($requireKeys as $key) {
-        if (empty($_POST[$key])) {
-            $errors[] = "Field $key is empty";
-        } else {
-            $formData[$key]   = $_POST[$key];
-        }
+    if (strlen($_POST['comment']) > 150) {
+        $errors[] = "Field comments should not exceed 150 characters.";
     }
 
     if (empty($errors)) {
-        $fileOpen = fopen(FILE_NAME, "a");
+        foreach ($requireKeys as $key) {
+            $formData[$key] = $_POST[$key];
+        }
+
+        $fileOpen = fopen($fileName, "a");
 
         $formData['time'] = date('H:i:s d-m-Y');
         if (fputcsv($fileOpen, $formData, ';')) {
