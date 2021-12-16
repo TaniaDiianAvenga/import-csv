@@ -4,22 +4,26 @@ header('Content-Type: application/json');
 
 $errors      = [];
 $success     = false;
-$requireKeys = ['name', 'email', 'comment'];
+$expectedKeys = ['name', 'email', 'comment'];
 
-$fileName = "data_" . date('m') . ".csv";
+$fileName = "data/data_" . date('m') . ".csv";
 
 try {
     if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address.";
     }
 
-    if (strlen($_POST['comment']) > 150) {
+    if (!empty($_POST['comment']) && strlen($_POST['comment']) > 150) {
         $errors[] = "Field comments should not exceed 150 characters.";
     }
 
     if (empty($errors)) {
-        foreach ($requireKeys as $key) {
+        foreach ($expectedKeys as $key) {
             $formData[$key] = $_POST[$key];
+        }
+
+        if (!file_exists('data')) {
+            mkdir('data', 0777, true);
         }
 
         $fileOpen = fopen($fileName, "a");
@@ -32,12 +36,10 @@ try {
 } catch (Exception $e) {
     $errors[] = $e->getMessage();
 } finally {
-
-    if ($fileOpen) {
+    if (isset($fileOpen)) {
         fclose($fileOpen);
     }
 }
-
 echo json_encode([
     'errors'  => $errors,
     'success' => $success
