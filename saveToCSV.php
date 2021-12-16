@@ -9,7 +9,7 @@ $expectedKeys = ['name', 'email', 'comment'];
 $fileName = "data/data_" . date('m') . ".csv";
 
 try {
-    if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+    if (!empty($_POST['email']) && !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address.";
     }
 
@@ -19,7 +19,7 @@ try {
 
     if (empty($errors)) {
         foreach ($expectedKeys as $key) {
-            $formData[$key] = $_POST[$key];
+            $formData[$key] = trim($_POST[$key]);
         }
 
         if (!file_exists('data')) {
