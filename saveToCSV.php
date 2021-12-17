@@ -1,9 +1,14 @@
 <?php
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(404);
+    exit();
+}
+
 header('Content-Type: application/json');
 
-$errors      = [];
-$success     = false;
+$errors       = [];
+$success      = false;
 $expectedKeys = ['name', 'email', 'comment'];
 
 $fileName = "data/data_" . date('m') . ".csv";
