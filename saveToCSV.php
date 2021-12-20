@@ -1,6 +1,6 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')) {
     http_response_code(404);
     exit();
 }
@@ -9,27 +9,32 @@ header('Content-Type: application/json');
 
 $errors       = [];
 $success      = false;
-$expectedKeys = ['name', 'email', 'comment'];
+$expectedKeysWithLength = [
+    'name'    => 20,
+    'email'   => 20,
+    'comment' => 150
+];
 
 $fileName = "data/data_" . date('m') . ".csv";
+
+function checkFieldLength($field, $maxLength, &$array)
+{
+    if (!empty($_POST[$field]) && strlen($_POST[$field]) > $maxLength) {
+        $array[] = "Field $field should not exceed $maxLength characters.";
+    }
+}
 
 try {
     if (!empty($_POST['email']) && !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address.";
     }
 
-    if (!empty($_POST['comment']) && strlen($_POST['comment']) > 150) {
-        $errors[] = "Field comments should not exceed 150 characters.";
-    }
-
-    foreach ($expectedKeys as $key) {
-        if (strlen($_POST[$key]) > 20 && $key != "comment") {
-            $errors[] = "Field $key should not exceed 20 characters.";
-        }
+    foreach ($expectedKeysWithLength as $key=>$value) {
+        checkFieldLength($key, $value, $errors);
     }
 
     if (empty($errors)) {
-        foreach ($expectedKeys as $key) {
+        foreach (array_keys($expectedKeysWithLength) as $key) {
             $formData[$key] = trim($_POST[$key]);
         }
 
