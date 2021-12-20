@@ -1,6 +1,6 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
     http_response_code(404);
     exit();
 }
@@ -20,6 +20,12 @@ try {
 
     if (!empty($_POST['comment']) && strlen($_POST['comment']) > 150) {
         $errors[] = "Field comments should not exceed 150 characters.";
+    }
+
+    foreach ($expectedKeys as $key) {
+        if (strlen($_POST[$key]) > 20 && $key != "comment") {
+            $errors[] = "Field $key should not exceed 20 characters.";
+        }
     }
 
     if (empty($errors)) {
