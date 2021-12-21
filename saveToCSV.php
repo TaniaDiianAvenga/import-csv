@@ -20,17 +20,17 @@ $fileName = "data/data_" . date('m') . ".csv";
 function checkFieldLength($field, $maxLength, &$array)
 {
     if (!empty($_POST[$field]) && strlen($_POST[$field]) > $maxLength) {
-        $array[] = "Field $field should not exceed $maxLength characters.";
+        $array[$field] = "Field $field should not exceed $maxLength characters.";
     }
 }
 
 try {
-    if (!empty($_POST['email']) && !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Invalid email address.";
-    }
-
     foreach ($expectedKeysWithLength as $key=>$value) {
         checkFieldLength($key, $value, $errors);
+    }
+
+    if (!empty($_POST['email']) && !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = "Invalid email address.";
     }
 
     if (empty($errors)) {
