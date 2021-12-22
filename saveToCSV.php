@@ -7,8 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !(isset($_SERVER['HTTP_X_REQUESTED_
 
 header('Content-Type: application/json');
 
-$errors       = [];
-$success      = false;
+$errors                 = [];
+$success                = false;
 $expectedKeysWithLength = [
     'name'    => 20,
     'email'   => 20,
@@ -17,6 +17,8 @@ $expectedKeysWithLength = [
 
 $fileName = "data/data_" . date('m') . ".csv";
 
+const SECRET_KEY = "secret";
+
 function checkFieldLength($field, $maxLength, &$array)
 {
     if (!empty($_POST[$field]) && strlen($_POST[$field]) > $maxLength) {
@@ -24,8 +26,20 @@ function checkFieldLength($field, $maxLength, &$array)
     }
 }
 
+function checkRecapcha($response, &$array)
+{
+    $verify         = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=" . SECRET_KEY . "&response=$response");
+    $captchaSuccess = json_decode($verify);
+    if ($captchaSuccess->success === false) {
+        $array['recaptcha'] = "Invalid reCAPTCHA. Please try again.";
+    }
+}
+
 try {
-    foreach ($expectedKeysWithLength as $key=>$value) {
+
+    checkRecapcha($_POST["g-recaptcha-response"], $errors);
+
+    foreach ($expectedKeysWithLength as $key => $value) {
         checkFieldLength($key, $value, $errors);
     }
 
@@ -45,9 +59,8 @@ try {
         $fileOpen = fopen($fileName, "a");
 
         $formData['time'] = date('H:i:s d-m-Y');
-        if (fputcsv($fileOpen, $formData, ';')) {
-            $success = true;
-        }
+
+        $success = (bool)fputcsv($fileOpen, $formData, ';');
     }
 } catch (Exception $e) {
     $errors[] = $e->getMessage();

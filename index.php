@@ -5,14 +5,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 <br />
 <div class="container">
     <h2 align="center">How to Store Form data in CSV File using PHP</h2>
     <br />
+<!--   method="get" action="/saveToCSV.php"-->
     <div class="col-md-6" style="margin:0 auto; float:none;">
-        <form method="post" id = "ldap-form">
+        <form id = "ldap-form" >
             <h3 align="center">Contact Form</h3>
             <br />
             <?php echo $error; ?>
@@ -28,6 +30,9 @@
                 <label>Enter comment</label>
                 <textarea name="comment" class="form-control" placeholder="Enter comment"><?php echo $comment; ?></textarea>
             </div>
+            <div class="g-recaptcha" data-sitekey='6LeAzr0dAAAAABPmUL0hH-l_e23FzqUWLqUKsGh1'></div>
+            <div class="text-danger" id="recaptchaError"></div>
+
             <div class="form-group" align="center">
                 <input type="submit" name="submit" class="btn btn-info" value="Submit" />
             </div>
@@ -47,8 +52,10 @@
                 url:  "/saveToCSV.php",
                 data: $data,
                 cache: false,
+                captcha: grecaptcha.getResponse(),
                 success: function(data) {
                     console.log('data', data);
+                    grecaptcha.reset();
                 },
                 error: function (error, xml) {
                     console.log('error', error);
